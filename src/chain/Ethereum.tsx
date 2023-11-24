@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Divider, Button, Input } from 'antd';
-import { Wallet, Transaction, HDNodeWallet } from 'ethers';
+import { Transaction, HDNodeWallet } from 'ethers';
 const txStr = {
   to: '0xE6F4142dfFA574D1d9f18770BF73814df07931F3',
   nonce: 6,
@@ -30,8 +30,10 @@ function Ethereum() {
   const [msg, setMsg] = useState<undefined | string>('');
   const [loading, setLoading] = useState(false);
   const [wallet, setWallet] = useState<HDNodeWallet | null>(null);
+  const [derivePath, setDerivePath] = useState("m/44'/60'/0'/0/0");
   const importWallet = () => {
-    setWallet(Wallet.fromPhrase(mnemonic));
+    const HDWallet = HDNodeWallet.fromPhrase(mnemonic, '', derivePath);
+    setWallet(HDWallet);
   };
   const onSignMessage = async () => {
     setLoading(true);
@@ -63,6 +65,12 @@ function Ethereum() {
         placeholder="输入助记词"
         value={mnemonic}
         onChange={(e) => setMnemonic(e.target.value)}
+      />
+      <Input
+        style={{ width: '100%', marginTop: 10 }}
+        placeholder="输入地址路径"
+        value={derivePath}
+        onChange={(e) => setDerivePath(e.target.value)}
       />
       <Button
         style={{ marginTop: 10, width: '100%' }}
