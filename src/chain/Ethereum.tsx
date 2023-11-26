@@ -12,7 +12,8 @@ const txStr = {
   maxPriorityFeePerGas: 2,
   accessList: [],
 };
-const mnemonicStr = '';
+const mnemonicStr =
+  'hope scan cruel dizzy slender pass final defy south subject title crush';
 function Ethereum() {
   const [mnemonic, setMnemonic] = useState(mnemonicStr);
   const [tx, setTx] = useState(txStr);
@@ -27,28 +28,18 @@ function Ethereum() {
   transaction.maxPriorityFeePerGas = tx.maxPriorityFeePerGas;
   transaction.accessList = tx.accessList;
   // const [path, setPath] = useState('');
-  const [msg, setMsg] = useState<undefined | string>('');
-  const [loading, setLoading] = useState(false);
+  const [address, setAddress] = useState<undefined | string>('');
+  const [extendedKey, setExtendedKey] = useState('');
+  const [publicKey, setPublicKey] = useState('');
   const [wallet, setWallet] = useState<HDNodeWallet | null>(null);
   const [derivePath, setDerivePath] = useState("m/44'/60'/0'/0/0");
   const importWallet = () => {
     const HDWallet = HDNodeWallet.fromPhrase(mnemonic, '', derivePath);
     setWallet(HDWallet);
+    setExtendedKey(HDWallet.extendedKey);
+    setPublicKey(HDWallet.publicKey);
   };
-  const onSignMessage = async () => {
-    setLoading(true);
-    try {
-      const signature = await wallet?.signTransaction(transaction);
-      setMsg(signature);
-    } catch (e) {
-      if (e instanceof Error) {
-        setMsg(e.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  console.log('wallet', wallet);
   return (
     <div
       style={{
@@ -78,7 +69,27 @@ function Ethereum() {
       >
         导入钱包
       </Button>
-      {wallet && (
+      <div style={{ width: '100%', wordWrap: 'break-word' }}>
+        <p>
+          extendedKey：
+          <Input
+            style={{ width: '100%', marginTop: 10 }}
+            placeholder="extendedKey"
+            value={extendedKey}
+            onChange={(e) => setExtendedKey(e.target.value)}
+          />
+        </p>
+        <p>
+          publicKey
+          <Input
+            style={{ width: '100%', marginTop: 10 }}
+            placeholder="publicKey"
+            value={publicKey}
+            onChange={(e) => setPublicKey(e.target.value)}
+          />
+        </p>
+      </div>
+      {/* {wallet && (
         <div style={{ width: '100%', wordWrap: 'break-word' }}>
           <p>使用 Wallet 签署 Transaction</p>
           <Input.TextArea
@@ -105,7 +116,7 @@ function Ethereum() {
             签名
           </Button>
         </div>
-      )}
+      )} */}
       <Divider />
     </div>
   );
