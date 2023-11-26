@@ -1,40 +1,47 @@
 import { useState } from 'react';
 import { Divider, Button, Input } from 'antd';
-import { utils } from 'ethers';
-const txStr = {
-  to: '0xE6F4142dfFA574D1d9f18770BF73814df07931F3',
-  nonce: 6,
-  gasLimit: 21000,
-  value: 0,
-  chainId: 5,
-  type: 2,
-  maxFeePerGas: 18,
-  maxPriorityFeePerGas: 2,
-  accessList: [],
-};
-function Ethereum({ mnemonic }: { mnemonic : string}) {
+import * as bitcoin from 'bitcoinjs-lib';
+import * as bip39 from 'bip39';
+import BIP32Factory from 'bip32';
+import * as ecc from 'tiny-secp256k1';
+import { BIP32Interface } from 'bip32';
+const bip32 = BIP32Factory(ecc);
+function getAddress(node: any, network?: any): string {
+  return bitcoin.payments.p2pkh({ pubkey: node.publicKey, network }).address!;
+}
+
+function Bitcoin({ mnemonic }: { mnemonic: string }) {
   const [address, setAddress] = useState<undefined | string>('');
   const [extendedKey, setExtendedKey] = useState('');
   const [publicKey, setPublicKey] = useState('');
-  const [wallet, setWallet] = useState<utils.HDNode | null>(null);
+  const [wallet, setWallet] = useState<BIP32Interface | null>(null);
   const [derivePath, setDerivePath] = useState('');
   const importWallet = () => {
-    const HDWallet = utils.HDNode.fromMnemonic(mnemonic, '');
-    const derivationPath = "m/44'/60'/0'/0/0"; // 以太坊的标准派生路径
-    const childNode = HDWallet.derivePath(derivationPath);
-    setWallet(childNode);
-    setExtendedKey(childNode.extendedKey);
-    setPublicKey(childNode.publicKey);
-    setAddress(childNode.address);
+    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const node = bip32.fromSeed(seed);
+    const extendedKey = node.neutered().toBase58();
+    const publicKey = node.publicKey.toString('hex');
+    // const strng = node.toBase58();
+    // const restored = bip32.fromBase58(strng);
+    // @ts-ignore
+    setWallet(node);
+    setExtendedKey(extendedKey);
+    setPublicKey(publicKey);
+    setAddress(getAddress(node));
   };
   const publicKeyToAddress = () => {
-    const address = utils.computeAddress(publicKey);
+    // @ts-ignore
+    const publicKeyBuffer = window.Buffer.from(publicKey, 'hex');
+    const { address } = bitcoin.payments.p2pkh({
+      pubkey: publicKeyBuffer,
+      network: bitcoin.networks.bitcoin,
+    });
     setAddress(address);
   };
   const deriveAddress = () => {
     if (wallet && derivePath) {
       const derivedWallet = wallet.derivePath(derivePath);
-      setAddress(derivedWallet.address);
+      setAddress(getAddress(derivedWallet));
     }
   };
   console.log('wallet', wallet);
@@ -47,7 +54,7 @@ function Ethereum({ mnemonic }: { mnemonic : string}) {
         width: 500,
       }}
     >
-      <h3>Ethereum</h3>
+      <h3>Bitcoin</h3>
       <Button
         style={{ marginTop: 10, width: '100%' }}
         onClick={() => importWallet()}
@@ -101,37 +108,9 @@ function Ethereum({ mnemonic }: { mnemonic : string}) {
           通过 publicKey 推导出 address
         </Button>
       </div>
-      {/* {wallet && (
-        <div style={{ width: '100%', wordWrap: 'break-word' }}>
-          <p>使用 Wallet 签署 Transaction</p>
-          <Input.TextArea
-            value={JSON.stringify(tx, null, 2)}
-            onChange={(e) => {
-              if (e.target.value) {
-                try {
-                  const txStr = JSON.parse(e.target.value);
-                  setTx(txStr);
-                } catch (e) {
-                  console.log('>>>>>e', e);
-                }
-              }
-            }}
-            style={{ height: 280, resize: 'none', width: '100%' }}
-          />
-          <p>unsignedHash: {transaction?.unsignedHash}</p>
-          {msg && <p>sign result: {msg}</p>}
-          <Button
-            style={{ marginTop: 10, width: '100%' }}
-            onClick={() => onSignMessage()}
-            loading={loading}
-          >
-            签名
-          </Button>
-        </div>
-      )} */}
       <Divider />
     </div>
   );
 }
 
-export default Ethereum;
+export default Bitcoin;
