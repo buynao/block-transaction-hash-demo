@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { Divider, Button, Input } from 'antd';
+// @ts-ignore
 import TronWeb from 'tronweb';
 
-function getAddress(node: any): string {
-  // return TronWeb.address.fromPrivateKey(node.privateKey);
+function publicKeyToTronAddress(publicKeyHex: Buffer) {
+  const addressBytes = TronWeb.utils.crypto.computeAddress(publicKeyHex);
+  const base58Address =
+    TronWeb.utils.crypto.getBase58CheckAddress(addressBytes);
+  return base58Address;
 }
 async function createWalletFromMnemonic(mnemonic: string) {
   const tronWeb = new TronWeb({
@@ -18,20 +22,24 @@ async function createWalletFromMnemonic(mnemonic: string) {
 function Tron({ mnemonic }: { mnemonic: string }) {
   const [address, setAddress] = useState<undefined | string>('');
   const [extendedKey, setExtendedKey] = useState('');
-  const [privateKey, setPrivateKey] = useState('');
+  const [publicKey, setPublicKey] = useState('');
   const [wallet, setWallet] = useState<null>(null);
   const [derivePath, setDerivePath] = useState('');
   const importWallet = async () => {
     const wallet = await createWalletFromMnemonic(mnemonic);
     setWallet(wallet);
     // setExtendedKey(extendedKey);
-    setPrivateKey(wallet.publicKey);
+    setPublicKey(wallet.publicKey);
     setAddress(wallet.address);
   };
-  const privateKeyToAddress = () => {
+  const publicKeyToAddress = () => {
     // @ts-ignore
-    // const privateKeyBuffer = window.Buffer.from(privateKey, 'hex');
-    // const address = tronWeb.address.fromPrivateKey(privateKeyBuffer);
+    const publicKeyBuffer = window.Buffer.from(
+      publicKey.replace('0x', ''),
+      'hex',
+    );
+    const address = publicKeyToTronAddress(publicKeyBuffer);
+    console.log('>TronWeb.isAddress(address)', TronWeb.isAddress(address));
     setAddress(address);
   };
   const deriveAddress = () => {
@@ -89,17 +97,17 @@ function Tron({ mnemonic }: { mnemonic: string }) {
           通过 xpub + derive path 推导出 address
         </Button>
         <p>
-          privateKey
+          publicKey
           <Input
             style={{ width: '100%', marginTop: 10 }}
-            placeholder="privateKey"
-            value={privateKey}
-            onChange={(e) => setPrivateKey(e.target.value)}
+            placeholder="publicKey"
+            value={publicKey}
+            onChange={(e) => setPublicKey(e.target.value)}
           />
         </p>
         <Button
           style={{ marginTop: 10, width: '100%' }}
-          onClick={privateKeyToAddress}
+          onClick={publicKeyToAddress}
         >
           通过 privateKey 推导出 address
         </Button>
