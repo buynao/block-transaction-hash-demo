@@ -1,12 +1,21 @@
 import './App.css';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Ethereum, Bitcoin, Tron } from './chain/index';
 import { Input } from 'antd';
+
+import { Select } from 'antd';
+const { Option } = Select;
 
 function App() {
   const mnemonicStr =
     'hope scan cruel dizzy slender pass final defy south subject title crush';
   const [mnemonic, setMnemonic] = useState(mnemonicStr);
+  const [chain, setChain] = useState('Ethereum');
+
+  const handleChange = (value: string) => {
+    setChain(value);
+  };
+
   return (
     <div
       style={{
@@ -22,9 +31,18 @@ function App() {
         value={mnemonic}
         onChange={(e) => setMnemonic(e.target.value)}
       />
-      <Ethereum mnemonic={mnemonic} />
-      <Bitcoin mnemonic={mnemonic} />
-      <Tron mnemonic={mnemonic} />
+      <Select
+        defaultValue="Ethereum"
+        style={{ width: 120, marginTop: 20 }}
+        onChange={handleChange}
+      >
+        <Option value="Ethereum">Ethereum</Option>
+        <Option value="Bitcoin">Bitcoin</Option>
+        <Option value="Tron">Tron</Option>
+      </Select>
+      {chain === 'Ethereum' && <Ethereum mnemonic={mnemonic} />}
+      {chain === 'Bitcoin' && <Bitcoin mnemonic={mnemonic} />}
+      {chain === 'Tron' && <Tron mnemonic={mnemonic} />}
     </div>
   );
 }

@@ -81,7 +81,7 @@ function Tron({ mnemonic }: { mnemonic: string }) {
           style={{ marginTop: 10, width: '100%' }}
           onClick={publicKeyToAddress}
         >
-          通过 privateKey 推导出 address
+          通过 publicKey 推导出 address
         </Button>
       </div>
       <Divider />
