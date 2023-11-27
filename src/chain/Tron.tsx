@@ -42,13 +42,6 @@ function Tron({ mnemonic }: { mnemonic: string }) {
     console.log('>TronWeb.isAddress(address)', TronWeb.isAddress(address));
     setAddress(address);
   };
-  const deriveAddress = () => {
-    if (wallet && derivePath) {
-      // const derivedWallet = wallet.derivePath(derivePath);
-      // setAddress(getAddress(derivedWallet));
-    }
-  };
-  console.log('wallet', wallet);
   return (
     <div
       style={{
@@ -75,27 +68,6 @@ function Tron({ mnemonic }: { mnemonic: string }) {
             onChange={(e) => setAddress(e.target.value)}
           />
         </p>
-        <p>
-          extendedKey：
-          <Input
-            style={{ width: '100%', marginTop: 10 }}
-            placeholder="extendedKey"
-            value={extendedKey}
-            onChange={(e) => setExtendedKey(e.target.value)}
-          />
-        </p>
-        <Input
-          style={{ width: '100%', marginTop: 10 }}
-          placeholder="输入地址路径"
-          value={derivePath}
-          onChange={(e) => setDerivePath(e.target.value)}
-        />
-        <Button
-          style={{ marginTop: 10, width: '100%' }}
-          onClick={deriveAddress}
-        >
-          通过 xpub + derive path 推导出 address
-        </Button>
         <p>
           publicKey
           <Input
